@@ -5,16 +5,27 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.InputStream;
 import java.util.Set;
 
 public abstract class Connector implements Sensor {
 
-    public OutputStream Outstream;
+    public InputStream Inputstream;
+
+    public BluetoothDevice getDevice() {
+        return device;
+    }
+
     public BluetoothDevice device;
     public BluetoothAdapter bluetooth;
-    BluetoothSocket socket;
+    public BluetoothSocket socket;
 
+    public InputStream getInputstream() {
+        return Inputstream;
+    }
+    public BluetoothSocket getSocket() {
+        return socket;
+    }
     public boolean Connect(String name) throws IOException {
 
         bluetooth = BluetoothAdapter.getDefaultAdapter();
@@ -30,9 +41,9 @@ public abstract class Connector implements Sensor {
 
         socket = device.createInsecureRfcommSocketToServiceRecord(device.getUuids()[0].getUuid());
         socket.connect();
-        Outstream = socket.getOutputStream();
+        Inputstream = socket.getInputStream();
 
-        return Outstream != null;
+        return Inputstream != null;
     }
 
     public void Disconnect () throws IOException {

@@ -3,6 +3,7 @@
     package="ru.main.sabal.materialapp">
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -14,11 +15,6 @@
             android:name=".SetDevice"
             android:label="@string/setdevice_tittle"
             android:theme="@style/AppTheme.NoActionBar">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <activity
             android:name=".Analizator"
@@ -30,7 +26,14 @@
             android:theme="@style/AppTheme.NoActionBar">
 
         </activity>
-
+        <activity android:name=".activity.DeviceControlActivity" android:label="@string/app_name" android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+        <activity android:name=".activity.SettingsActivity" android:label="@string/app_name"/>
+        <activity android:name=".bluetooth.DeviceListActivity" android:label="@string/select_device" android:theme="@style/AppTheme"/>
     </application>
 
 </manifest>
