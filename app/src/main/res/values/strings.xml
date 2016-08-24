@@ -1,6 +1,7 @@
 <resources>
-    <string name="app_name">Material App</string>
-
+    <string name="app_name">Forsite</string>
+    <string name="setdevice_tittle">Выберите устройство</string>
+<string name="analizator_tittle">Сканер</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="navigation_drawer_header_title">Title</string>
@@ -8,7 +9,7 @@
     <string name="action_settings">Settings</string>
     <string name="alert_about_tittle">Описание</string>
     <string name="alert_about_ok">Ок</string>
-    <string name="alert_about_text1">М Видео</string>
-    <string name="alert_about_text2">Что-то</string>
-    <string name="alert_about_text3">Что-то еще</string>
+    <string name="alert_about_text1">Магазин мороженного</string>
+    <string name="alert_about_text2">Магазин бижутерии</string>
+    <string name="alert_about_text3">Магазин хозтоваров</string>
 </resources>

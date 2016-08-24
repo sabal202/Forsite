@@ -2,7 +2,10 @@ package ru.main.sabal.materialapp;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.speech.tts.TextToSpeech;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -10,28 +13,29 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
+
+import java.io.IOException;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
+        implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, TextToSpeech.OnInitListener {
 
+    private TextToSpeech mTTS;
+    public Sensor Controller;
+    boolean BTconnected = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-       /* FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });*/
-
+        mTTS = new TextToSpeech(this, this);
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -40,6 +44,23 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        Controller = new Arduino();
+        String Device = "";
+        if (getIntent().hasExtra("Device Name")) {
+            Device = getIntent().getExtras().getString("Device Name", "null");
+            try {
+                BTconnected = Controller.Connect(Device);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        if (BTconnected) {
+
+        } else {
+            ToScreen("\nNo Bluetooth connection with " + Device + "\n");
+            MainActivity.this.finish();
+        }
 
     }
 
@@ -61,29 +82,16 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camara) {
-            // Handle the camera action
+        if (id == R.id.nav_setdevice) {
+            Intent intent = new Intent(MainActivity.this, SetDevice.class);
+            startActivity(intent);
+            this.finish();
         } else if (id == R.id.nav_gallery) {
 
         } else if (id == R.id.nav_slideshow) {
@@ -103,17 +111,20 @@ public class MainActivity extends AppCompatActivity
         switch (v.getId()){
             case R.id.button2:
                 message = getString(R.string.alert_about_text1);
-                createAlert(adb);
+                mTTS.speak(message, TextToSpeech.QUEUE_FLUSH, null);
+                //createAlert(adb);
                 break;
 
             case R.id.button3:
                 message = getString(R.string.alert_about_text2);
-                createAlert(adb);
+                mTTS.speak(message, TextToSpeech.QUEUE_FLUSH, null);
+                //createAlert(adb);
                 break;
 
             case R.id.button4:
+                mTTS.speak(message, TextToSpeech.QUEUE_FLUSH, null);
                 message = getString(R.string.alert_about_text3);
-                createAlert(adb);
+                //createAlert(adb);
                 break;
 
             default:
@@ -139,4 +150,48 @@ public class MainActivity extends AppCompatActivity
             }
         }
     };
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_settings) {
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+    @Override
+    public void onInit(int status) {
+        // TODO Auto-generated method stub
+        if (status == TextToSpeech.SUCCESS) {
+
+            Locale locale = new Locale("ru");
+
+            //int result = mTTS.setLanguage(locale);
+            int result = mTTS.setLanguage(Locale.getDefault());
+
+            if (result == TextToSpeech.LANG_MISSING_DATA
+                    || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                Log.e("TTS", "Извините, этот язык не поддерживается");
+            } else {
+               // mButton.setEnabled(true);
+            }
+
+        } else {
+            Log.e("TTS", "Ошибка!");
+        }
+
+    }
+    public void ToScreen(String stroka) {
+        Toast.makeText(getApplicationContext(), stroka, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onDestroy() {
+        // Don't forget to shutdown mTTS!
+        if (mTTS != null) {
+            mTTS.stop();
+            mTTS.shutdown();
+        }
+        super.onDestroy();
+    }
 }
