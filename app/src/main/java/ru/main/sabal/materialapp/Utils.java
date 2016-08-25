@@ -7,26 +7,13 @@ import android.text.InputFilter;
 import android.text.Spanned;
 import android.util.Log;
 
-/**
- * Вспомогательные методы
- * Created by sash0k on 29.01.14.
- */
 public class Utils {
 
-    /**
-     * Общий метод вывода отладочных сообщений в лог
-     */
     public static void log(String message) {
         if (BuildConfig.DEBUG) {
             if (message != null) Log.i(Const.TAG, message);
         }
     }
-    // ============================================================================
-
-
-    /**
-     * Конвертация hex-команд в строку для отображения
-     */
     public static String printHex(String hex) {
         StringBuilder sb = new StringBuilder();
         int len = hex.length();
@@ -42,14 +29,7 @@ public class Utils {
         }
         return sb.toString();
     }
-    // ============================================================================
 
-
-    /**
-     * Перевод введенных ASCII-команд в hex побайтно.
-     * @param hex - команда
-     * @return - массив байт команды
-     */
     public static byte[] toHex(String hex) {
         int len = hex.length();
         byte[] result = new byte[len];
@@ -67,45 +47,20 @@ public class Utils {
         }
         return result;
     }
-    // ============================================================================
-
-
-    /**
-     * Метод сливает два массива в один
-     */
     public static byte[] concat(byte[] A, byte[] B) {
         byte[] C = new byte[A.length + B.length];
         System.arraycopy(A, 0, C, 0, A.length);
         System.arraycopy(B, 0, C, A.length, B.length);
         return C;
     }
-    // ============================================================================
-
-
-    /**
-     * Получение id сохранённого в игрушке звукового набора
-     */
     public static String getPrefence(Context context, String item) {
         final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
         return settings.getString(item, Const.TAG);
     }
-    // ============================================================================
-
-
-    /**
-     * Получение флага из настроек
-     */
     public static boolean getBooleanPrefence(Context context, String tag) {
         final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
         return settings.getBoolean(tag, true);
     }
-    // ============================================================================
-
-
-    /**
-     * Класс-фильтр полей ввода
-     */
-    // ============================================================================
     public static class InputFilterHex implements InputFilter {
 
         @Override
@@ -122,5 +77,4 @@ public class Utils {
             return null;
         }
     }
-    // ============================================================================
 }

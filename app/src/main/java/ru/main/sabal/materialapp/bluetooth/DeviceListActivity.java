@@ -39,12 +39,6 @@ import java.util.Set;
 
 import ru.main.sabal.materialapp.R;
 
-
-/**
- * This Activity appears as a dialog. It lists already paired devices,
- * and it can scan for devices nearby. When the user selects a device,
- * its MAC address is returned to the caller as the result of this activity.
- */
 public class DeviceListActivity extends Activity {
 
     private static final String TAG = "DeviceListActivity";
@@ -64,11 +58,7 @@ public class DeviceListActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.device_list);
-
-        // Set default result to CANCELED, in case the user backs out
         setResult(Activity.RESULT_CANCELED);
-
-        // Initialize the button to perform device discovery
         scanButton = (Button) findViewById(R.id.button_scan);
         scanButton.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
@@ -123,10 +113,6 @@ public class DeviceListActivity extends Activity {
 
         this.unregisterReceiver(mReceiver);
     }
-
-    /**
-     * Start device discover with the BluetoothAdapter
-     */
     private void doDiscovery() {
         if (D) Log.d(TAG, "doDiscovery()");
         mNewDevicesArrayAdapter.clear();
@@ -140,10 +126,9 @@ public class DeviceListActivity extends Activity {
 
     private final OnItemClickListener mDeviceClickListener = new OnItemClickListener() {
         public void onItemClick(AdapterView<?> av, View v, int arg2, long arg3) {
-            // Cancel discovery because it's costly and we're about to connect
+
             mBtAdapter.cancelDiscovery();
 
-            // Get the device MAC address, which is the last 17 chars in the View
             CharSequence info = ((TextView) v).getText();
             if (info != null) {
                 // TODO this is not so cool...

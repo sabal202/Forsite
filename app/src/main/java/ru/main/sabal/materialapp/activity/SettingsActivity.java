@@ -11,11 +11,6 @@ import android.view.MenuItem;
 
 import ru.main.sabal.materialapp.R;
 
-
-/**
- * Created by sash0k on 29.11.13.
- * Настройки приложения
- */
 @SuppressWarnings("deprecation")
 public final class SettingsActivity extends PreferenceActivity
         implements SharedPreferences.OnSharedPreferenceChangeListener {
@@ -35,8 +30,6 @@ public final class SettingsActivity extends PreferenceActivity
         setPrefenceTitle(getString(R.string.pref_commands_mode));
         setPrefenceTitle(getString(R.string.pref_commands_ending));
     }
-    // ============================================================================
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -49,19 +42,12 @@ public final class SettingsActivity extends PreferenceActivity
                 return super.onOptionsItemSelected(item);
         }
     }
-    // ============================================================================
 
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String value) {
         setPrefenceTitle(value);
     }
-    // ============================================================================
-
-
-    /**
-     * Установка заголовка списка
-     */
     private void setPrefenceTitle(String TAG) {
         final Preference preference = findPreference(TAG);
         if (preference == null) return;
@@ -71,5 +57,4 @@ public final class SettingsActivity extends PreferenceActivity
             preference.setTitle(title);
         }
     }
-    // ============================================================================
 }

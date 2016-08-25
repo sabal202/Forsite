@@ -1,8 +1,10 @@
 package ru.main.sabal.materialapp.activity;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -10,6 +12,7 @@ import android.os.Message;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.Menu;
@@ -38,13 +41,11 @@ public final class DeviceControlActivity extends BaseActivity implements TextToS
     private static String MSG_NOT_CONNECTED;
     private static String MSG_CONNECTING;
     private static String MSG_CONNECTED;
-    ImageView Beacon1,Beacon2,Beacon3,Beacon4,Beacon5,Beacon6;
+    ImageView Beacon1, Beacon2, Beacon3, Beacon4, Beacon5, Beacon6;
     private static DeviceConnector connector;
     private static BluetoothResponseHandler mHandler;
     private TextToSpeech mTTS;
     private TextView logTextView;
-
-    // Настройки приложения
     private boolean hexMode, needClean;
     //private boolean show_timings, show_direction;
     private String deviceName;
@@ -56,7 +57,12 @@ public final class DeviceControlActivity extends BaseActivity implements TextToS
 
         if (mHandler == null) mHandler = new BluetoothResponseHandler(this);
         else mHandler.setTarget(this);
-
+        AlertDialog.Builder adb = new AlertDialog.Builder(this);
+        adb.setTitle(R.string.alert_about_tittle)
+                .setMessage("Текущая версия приложения оптимизирована для смартфонов с диагональю 4.8 дюйма или близкие к этому")
+                .setIcon(android.R.drawable.ic_dialog_info)
+                .setPositiveButton(R.string.alert_about_ok, myClickListener)
+                .create().show();
         MSG_NOT_CONNECTED = getString(R.string.msg_not_connected);
         MSG_CONNECTING = getString(R.string.msg_connecting);
         MSG_CONNECTED = getString(R.string.msg_connected);
@@ -78,16 +84,27 @@ public final class DeviceControlActivity extends BaseActivity implements TextToS
         Beacon5 = (ImageView) findViewById(R.id.BeaconImage5);
         Beacon6 = (ImageView) findViewById(R.id.BeaconImage6);
     }
+
+    DialogInterface.OnClickListener myClickListener = new DialogInterface.OnClickListener() {
+        public void onClick(DialogInterface dialog, int which) {
+            switch (which) {
+                case Dialog.BUTTON_POSITIVE:
+                    dialog.cancel();
+                    break;
+            }
+        }
+
+    };
+
     @Override
     public void onDestroy() {
-        // Don't forget to shutdown mTTS!
         if (mTTS != null) {
             mTTS.stop();
             mTTS.shutdown();
         }
         super.onDestroy();
     }
-    // ==========================================================================
+
     @Override
     public void onInit(int status) {
         // TODO Auto-generated method stub
@@ -110,6 +127,7 @@ public final class DeviceControlActivity extends BaseActivity implements TextToS
         }
 
     }
+
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -119,21 +137,11 @@ public final class DeviceControlActivity extends BaseActivity implements TextToS
             outState.putString(LOG, log);
         }
     }
-    // ============================================================================
 
-
-    /**
-     * Проверка готовности соединения
-     */
     private boolean isConnected() {
         return (connector != null) && (connector.getState() == DeviceConnector.STATE_CONNECTED);
     }
-    // ==========================================================================
 
-
-    /**
-     * Разорвать соединение
-     */
     private void stopConnection() {
         if (connector != null) {
             connector.stop();
@@ -141,40 +149,25 @@ public final class DeviceControlActivity extends BaseActivity implements TextToS
             deviceName = null;
         }
     }
-    // ==========================================================================
 
 
-    /**
-     * Список устройств для подключения
-     */
     private void startDeviceListActivity() {
         stopConnection();
         Intent serverIntent = new Intent(this, DeviceListActivity.class);
         startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE);
     }
-    // ============================================================================
 
-
-    /**
-     * Обработка аппаратной кнопки "Поиск"
-     *
-     * @return
-     */
     @Override
     public boolean onSearchRequested() {
         if (super.isAdapterReady()) startDeviceListActivity();
         return false;
     }
-    // ==========================================================================
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.device_control_activity, menu);
         return true;
     }
-    // ============================================================================
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -213,28 +206,20 @@ public final class DeviceControlActivity extends BaseActivity implements TextToS
                 return super.onOptionsItemSelected(item);
         }
     }
-    // ============================================================================
-
 
     @Override
     public void onStart() {
         super.onStart();
-
-        // Формат отображения лога команд
         //this.show_timings = Utils.getBooleanPrefence(this, getString(R.string.pref_log_timing));
         //this.show_direction = Utils.getBooleanPrefence(this, getString(R.string.pref_log_direction));
         this.needClean = Utils.getBooleanPrefence(this, getString(R.string.pref_need_clean));
     }
-    // ============================================================================
-
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
             case REQUEST_CONNECT_DEVICE:
-                // When DeviceListActivity returns with a device to connect
                 if (resultCode == Activity.RESULT_OK) {
                     String address = data.getStringExtra(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
                     BluetoothDevice device = btAdapter.getRemoteDevice(address);
@@ -242,7 +227,6 @@ public final class DeviceControlActivity extends BaseActivity implements TextToS
                 }
                 break;
             case REQUEST_ENABLE_BT:
-                // When the request to enable Bluetooth returns
                 super.pendingRequestEnableBt = false;
                 if (resultCode != Activity.RESULT_OK) {
                     Utils.log("BT not enabled");
@@ -250,12 +234,7 @@ public final class DeviceControlActivity extends BaseActivity implements TextToS
                 break;
         }
     }
-    // ==========================================================================
 
-
-    /**
-     * Установка соединения с устройством
-     */
     private void setupConnector(BluetoothDevice connectedDevice) {
         stopConnection();
         try {
@@ -267,20 +246,11 @@ public final class DeviceControlActivity extends BaseActivity implements TextToS
             Utils.log("setupConnector failed: " + e.getMessage());
         }
     }
-    // ==========================================================================
 
-
-
-    /**
-     * Добавление ответа в лог
-     *
-     * @param message  - текст для отображения
-     * @param outgoing - направление передачи
-     */
     ArrayList<String> log = new ArrayList<>();
 
     void appendLog(String message, boolean hexMode, boolean outgoing, boolean clean) {
-        if (log.size()==0){
+        if (log.size() == 0) {
             log.add("0");
         }
         StringBuilder msg = new StringBuilder();
@@ -294,13 +264,13 @@ public final class DeviceControlActivity extends BaseActivity implements TextToS
         //if (outgoing) msg.append('\n');
         String[] numbers = msg.toString().split("\n");
 
-        if (msg.toString().equals(log.get(log.size()-1))){
+        if (msg.toString().equals(log.get(log.size() - 1))) {
 
-        }else {
+        } else {
             log.add(msg.toString());
-            logTextView.setText(log.get(log.size()-1));
-            int ID = new Integer(numbers[0]);
-            switch (ID){
+            logTextView.setText(log.get(log.size() - 1));
+            int IDbe = Character.getNumericValue(numbers[0].charAt(0)) * 1000 + Character.getNumericValue(numbers[0].charAt(1)) * 100 + Character.getNumericValue(numbers[0].charAt(2)) * 10 + Character.getNumericValue(numbers[0].charAt(3));
+            switch (IDbe) {
                 case 1235:
                     disableBeacons();
                     Beacon1.setBackgroundResource(R.drawable.beacon);
@@ -322,7 +292,7 @@ public final class DeviceControlActivity extends BaseActivity implements TextToS
                     mTTS.speak(getString(R.string.beacon4), TextToSpeech.QUEUE_FLUSH, null);
                     break;
                 default:
-                    Toast.makeText(this, "чет не распознал", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "чет не распознал" + numbers[0].charAt(0) + "  " + numbers[0].charAt(1) + "  " + numbers[0].charAt(2) + "  " + numbers[0].charAt(3) + IDbe + "  " + msg.toString() + "  " + numbers[0].length() + "  " + numbers[0], Toast.LENGTH_LONG).show();
                     disableBeacons();
                     break;
             }
@@ -343,18 +313,12 @@ public final class DeviceControlActivity extends BaseActivity implements TextToS
         Beacon5.setBackgroundResource(R.drawable.beacon_nonselected);
         Beacon6.setBackgroundResource(R.drawable.beacon_nonselected);
     }
-    // =========================================================================
-
 
     void setDeviceName(String deviceName) {
         this.deviceName = deviceName;
         getSupportActionBar().setSubtitle(deviceName);
     }
-    // ==========================================================================
 
-    /**
-     * Обработчик приёма данных от bluetooth-потока
-     */
     private static class BluetoothResponseHandler extends Handler {
         private WeakReference<DeviceControlActivity> mActivity;
 
@@ -411,5 +375,4 @@ public final class DeviceControlActivity extends BaseActivity implements TextToS
             }
         }
     }
-    // ==========================================================================
 }
